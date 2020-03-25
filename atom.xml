@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Wangll</title>
+  
+  
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="http://yoursite.com/"/>
+  <updated>2020-03-25T04:03:48.969Z</updated>
+  <id>http://yoursite.com/</id>
+  
+  <author>
+    <name>Wang liangliang</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>k8s命令</title>
+    <link href="http://yoursite.com/2020/03/01/k8s%E5%91%BD%E4%BB%A4/"/>
+    <id>http://yoursite.com/2020/03/01/k8s%E5%91%BD%E4%BB%A4/</id>
+    <published>2020-02-29T16:00:00.000Z</published>
+    <updated>2020-03-25T04:03:48.969Z</updated>
+    
+    <content type="html"><![CDATA[<table><thead><tr><th>Command</th><th>Desc</th></tr></thead><tbody><tr><td>kubectl get nodes</td><td>显示所有nodes</td></tr><tr><td>kubectl version</td><td>显示版本</td></tr><tr><td>kubectl get deployments</td><td>显示所有的deployments</td></tr><tr><td>kubectl get pods</td><td>获取pod</td></tr><tr><td>kubectl get pods -o wide</td><td>获取pod</td></tr><tr><td>kubectl get svc zookeeper -o yaml</td><td>获取service</td></tr><tr><td>kubectl describe pods</td><td>查看pod详情</td></tr><tr><td>kubectl run my-app –image=my-app:v1 –port=8080</td><td>运行容器</td></tr><tr><td>kubectl exec my_pod my_container env</td><td>在容器中执行命令</td></tr><tr><td>kubectl exec -it my_pod my_container bash</td><td>在容器中开始一个bash session</td></tr><tr><td>kubectl get pods -l ‘env in (production,qa),tier in (frontend)’</td><td>根据Label选择Pod</td></tr><tr><td>kubectl delete -f /opt/pod.json</td><td>删除kubernetes对象</td></tr><tr><td>kubectl get pods -n kube-system</td><td>查看kube-system这个Namespace中的Pod</td></tr></tbody></table>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Command&lt;/th&gt;
+&lt;th&gt;Desc&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;&lt;tr&gt;
+&lt;td&gt;kubectl get nodes&lt;/td&gt;
+&lt;td&gt;显示所有nodes&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;
+      
+    
+    </summary>
+    
+    
+    
+      <category term="k8s" scheme="http://yoursite.com/tags/k8s/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>mysql迁移</title>
+    <link href="http://yoursite.com/2020/02/07/mysql%E8%BF%81%E7%A7%BB/"/>
+    <id>http://yoursite.com/2020/02/07/mysql%E8%BF%81%E7%A7%BB/</id>
+    <published>2020-02-06T16:00:00.000Z</published>
+    <updated>2020-03-24T15:23:15.356Z</updated>
+    
+    <content type="html"><![CDATA[<p>在迁移MySQL数据时，根据MySQL的架构，版本不同，迁移的步骤也会不一样。比如考虑到如下情况：</p><ul><li>MySQL是5.5，5.6还是5.7及以上。</li><li>MySQL是否支持GTID。</li><li>是自建的MySQL还是云提供商的MySQL。如果是云提供商提供的服务，基本不能操作MySQL的配置文件/etc/my.conf。</li><li>是只有一个MySQL，还是一主一从，还是多主多从。</li></ul><ol><li>将数据库设置为只读模式。可以读，但是不能写数据。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">show global variables like &quot;%read_only%&quot;</span><br><span class="line">set global read_only&#x3D;1;</span><br><span class="line">show global variables like &quot;%read_only%&quot;</span><br></pre></td></tr></table></figure></li><li>使用mysqldump将数据导出为SQL文件。<ul><li>如果mysql数据比较多，推荐每次导出一张表。这样可以很好地知道导出的进度。<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqldump --all-databases --single-transaction --triggers --routines --events  --host=192.168.0.100 --port=3306 --user=mysql_dev -p --ignore-table=mysql.user --ignore-table=mysql.db --ignore-table=mysql.tables_priv --<span class="built_in">set</span>-gtid-purged=OFF &gt; dump.sql</span><br></pre></td></tr></table></figure></li></ul></li><li>将上一步中导出的SQL文件，导入新的MySQL。</li></ol><a id="more"></a><h6 id="MySQL只读模式"><a href="#MySQL只读模式" class="headerlink" title="MySQL只读模式"></a>MySQL只读模式</h6><p>对于数据库读写状态，主要靠 “read_only”全局参数来设定；默认情况下，数据库是用于读写操作的，<br>所以read_only参数也是0或faluse状态，这时候不论是本地用户还是远程访问数据库的用户，<br>都可以进行读写操作；如需设置为只读状态，将该read_only参数设置为1或TRUE状态，<br>但设置 read_only=1 状态有两个需要注意的地方：</p><ol><li>read_only=1只读模式，不会影响slave同步复制的功能，所以在MySQL slave库中设定了read_only=1后，通过 show slave status\G 命令查看salve状态，<br>可以看到salve仍然会读取master上的日志，并且在slave库中应用日志，保证主从数据库同步一致；</li><li>read_only=1只读模式，可以限定普通用户进行数据修改的操作，<br>但不会限定具有super权限的用户的数据修改操作；在MySQL中设置read_only=1后，<br>普通的应用用户进行insert、update、delete等会产生数据变化的DML操作时，<br>都会报出数据库处于只读模式不能发生数据变化的错误，但具有super权限的用户，<br>例如在本地或远程通过root用户登录到数据库，还是可以进行数据变化的DML操作；</li></ol><p>为了确保所有用户，包括具有super权限的用户也不能进行读写操作，<br>就需要执行给所有的表加读锁的命令 flush tables with read lock;<br>这样使用具有super权限的用户登录数据库，想要发生数据变化的操作时，<br>也会提示表被锁定不能修改的报错。</p><p>这样通过 设置read_only=1和flush tables with read lock;两条命令，<br>就可以确保数据库处于只读模式，不会发生任何数据改变，在MySQL进行数据库迁移时，<br>限定master主库不能有任何数据变化，就可以通过这种方式来设定。</p><p>但同时由于加表锁的命令对数据库表限定非常严格，如果再slave从库上执行这个命令后，<br>slave库可以从master读取binlog日志，但不能够应用日志，slave库不能发生数据改变，<br>当然也不能够实现主从同步了，这时如果使用 “unlock tables;”解除全局的表读锁，<br>slave就会应用从master读取到的binlog日志，继续保证主从库数据库一致同步。</p><p>设定“read_only=1”只读模式开启的解锁命令为设定“read_only=0”;</p><p>设定全局锁“flush tables with read lock;”，对应的解锁模式命令为：“unlock tables;”.</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;在迁移MySQL数据时，根据MySQL的架构，版本不同，迁移的步骤也会不一样。比如考虑到如下情况：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;MySQL是5.5，5.6还是5.7及以上。&lt;/li&gt;
+&lt;li&gt;MySQL是否支持GTID。&lt;/li&gt;
+&lt;li&gt;是自建的MySQL还是云提供商的MySQL。如果是云提供商提供的服务，基本不能操作MySQL的配置文件/etc/my.conf。&lt;/li&gt;
+&lt;li&gt;是只有一个MySQL，还是一主一从，还是多主多从。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ol&gt;
+&lt;li&gt;将数据库设置为只读模式。可以读，但是不能写数据。&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;show global variables like &amp;quot;%read_only%&amp;quot;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;set global read_only&amp;#x3D;1;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;show global variables like &amp;quot;%read_only%&amp;quot;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/li&gt;
+&lt;li&gt;使用mysqldump将数据导出为SQL文件。&lt;ul&gt;
+&lt;li&gt;如果mysql数据比较多，推荐每次导出一张表。这样可以很好地知道导出的进度。&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;mysqldump --all-databases --single-transaction --triggers --routines --events  --host=192.168.0.100 --port=3306 --user=mysql_dev -p --ignore-table=mysql.user --ignore-table=mysql.db --ignore-table=mysql.tables_priv --&lt;span class=&quot;built_in&quot;&gt;set&lt;/span&gt;-gtid-purged=OFF &amp;gt; dump.sql&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;将上一步中导出的SQL文件，导入新的MySQL。&lt;/li&gt;
+&lt;/ol&gt;
+    
+    </summary>
+    
+    
+    
+      <category term="mysql" scheme="http://yoursite.com/tags/mysql/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>dns使用的端口</title>
+    <link href="http://yoursite.com/2019/11/20/dns%E4%BD%BF%E7%94%A8%E7%9A%84%E7%AB%AF%E5%8F%A3/"/>
+    <id>http://yoursite.com/2019/11/20/dns%E4%BD%BF%E7%94%A8%E7%9A%84%E7%AB%AF%E5%8F%A3/</id>
+    <published>2019-11-19T16:00:00.000Z</published>
+    <updated>2020-03-24T06:51:38.159Z</updated>
+    
+    <content type="html"><![CDATA[<p>DNS使用的是53端口。<br>通常DNS查询时，是以udp这个叫快速的数据传输协议来查询的，<br>但是万一没有查询到完整信息时，就会再以tcp协议来重新查询。<br>所以启动DNS的daemon时，会同时启动tcp即udp的53端口。</p><h4 id="DNS层级架构"><a href="#DNS层级架构" class="headerlink" title="DNS层级架构"></a>DNS层级架构</h4><p><img src="http://cn.linux.vbird.org/linux_server/0350dns_files/dns_dot.gif" alt="avatar"></p><a id="more"></a><p>在整个DNS系统的最上方一定是.(小数点)，这个DNS服务器称为root服务器。<br>它下面管理的域名有com，org，edu，gov，net，cn，jp，tw，uk等。这些域名是顶级域名。</p><h4 id="通过DNS查询IP的流程"><a href="#通过DNS查询IP的流程" class="headerlink" title="通过DNS查询IP的流程"></a>通过DNS查询IP的流程</h4><p>DNS以类似于树状目录的形态来进行主机名的管理。所以，<br>每一步DNS服务器都仅管理自己的下一层主机名的解析。至于下层的下层，则授权给下层的DNS来管理。<br>下面就来举例说明：</p><p>首先，在浏览器中输入<a href="http://www.ksu.edu.tw时，计算机会依据相关设定(在Linux中是利用/etc/resolv.conf这个文件)所提供的DNS去进行查询。" target="_blank" rel="noopener">http://www.ksu.edu.tw时，计算机会依据相关设定(在Linux中是利用/etc/resolv.conf这个文件)所提供的DNS去进行查询。</a></p><p>假设/etc/resolve.conf中配置了:</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nameserver 168.95.1.1</span><br></pre></td></tr></table></figure><ol><li><p>收到用户的查询请求，先查看本地有没有记录，若无，向root查询。</p></li><li><p>向root查询<br>root只记录了.tw的信息，此时root会告知我不知道这部主机的IP，不过，你应该向.tw去询问。</p></li><li><p>向第二层的.tw服务器查询<br> 向.tw查询，.tw仅管理了.edu.tw,.com.tw,gov.tw这几部主机。<br> 此时.tw会告知，我不知道这部主机的IP，不过，你应该向.edu.tw查询。</p></li><li><p>向第三层的.edu.tw查询<br> .edu.tw会告知，应该向.ksu.edu.tw查询。这里只能告知.ksu.edu.tw的IP。</p></li><li><p>向第四层的.ksu.edu.tw查询<br> .ksu.edu.tw说，没错，这部主机是我管理的。我告诉你，它的IP是XXXXX</p></li><li><p>查到正确的IP后，168.95.1.1的DNS机器不会再下次有人查询<a href="http://www.ksu.edu.tw的时候，" target="_blank" rel="noopener">www.ksu.edu.tw的时候，</a><br>再绕一大圈。所以，168.95.1.1这个DNS会缓存一份查询结果在内存中<br>，以方便响应下一次的相同请求。缓存是有时效性的，通常可能是24小时。</p></li></ol>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;DNS使用的是53端口。&lt;br&gt;通常DNS查询时，是以udp这个叫快速的数据传输协议来查询的，&lt;br&gt;但是万一没有查询到完整信息时，就会再以tcp协议来重新查询。&lt;br&gt;所以启动DNS的daemon时，会同时启动tcp即udp的53端口。&lt;/p&gt;
+&lt;h4 id=&quot;DNS层级架构&quot;&gt;&lt;a href=&quot;#DNS层级架构&quot; class=&quot;headerlink&quot; title=&quot;DNS层级架构&quot;&gt;&lt;/a&gt;DNS层级架构&lt;/h4&gt;&lt;p&gt;&lt;img src=&quot;http://cn.linux.vbird.org/linux_server/0350dns_files/dns_dot.gif&quot; alt=&quot;avatar&quot;&gt;&lt;/p&gt;
+    
+    </summary>
+    
+    
+    
+      <category term="dns" scheme="http://yoursite.com/tags/dns/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>tcpdump</title>
+    <link href="http://yoursite.com/2019/11/07/tcpdump/"/>
+    <id>http://yoursite.com/2019/11/07/tcpdump/</id>
+    <published>2019-11-06T16:00:00.000Z</published>
+    <updated>2020-03-24T07:00:10.764Z</updated>
+    
+    <content type="html"><![CDATA[<h4 id="Command"><a href="#Command" class="headerlink" title="Command"></a>Command</h4><ul><li>sudo tcpdump -D :查看本地网络接口列表</li><li>sudo tcpdump -A -i lo0 ‘( (tcp) and (port 8088) and (host 10.20.30.40) )’ :监听本地localhost回环地址网卡，tcp协议，端口8088的流量<h4 id="params"><a href="#params" class="headerlink" title="params"></a>params</h4></li><li>-s 0 :从一个包中截取的字节数，0表示不截断，抓完整的数据包。tcpdump默认显示部分数据，默认68字节。</li><li>-vvv :输出详细的报文信息</li></ul>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h4 id=&quot;Command&quot;&gt;&lt;a href=&quot;#Command&quot; class=&quot;headerlink&quot; title=&quot;Command&quot;&gt;&lt;/a&gt;Command&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;sudo tcpdump -D :查看本地网络接口列表&lt;/li&gt;
+&lt;li&gt;sudo tc
+      
+    
+    </summary>
+    
+    
+    
+      <category term="tcpdump" scheme="http://yoursite.com/tags/tcpdump/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>docker-network</title>
+    <link href="http://yoursite.com/2019/10/08/docker-network/"/>
+    <id>http://yoursite.com/2019/10/08/docker-network/</id>
+    <published>2019-10-07T16:00:00.000Z</published>
+    <updated>2020-03-24T07:05:19.016Z</updated>
+    
+    <content type="html"><![CDATA[<h4 id="容器互联"><a href="#容器互联" class="headerlink" title="容器互联"></a>容器互联</h4><p>如果你之前有 Docker 使用经验，你可能已经习惯了使用 –link 参数来使容器互联。</p><p>随着 Docker 网络的完善，强烈建议大家将容器加入自定义的 Docker 网络来连接多个容器，而不是使用 –link 参数。</p><h4 id="新建网络"><a href="#新建网络" class="headerlink" title="新建网络"></a>新建网络</h4><a id="more"></a><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ docker network create -d bridge my-net</span><br></pre></td></tr></table></figure><ul><li>-d 参数指定 Docker 网络类型，有 bridge overlay。其中 overlay<br>网络类型用于 Swarm mode.<h4 id="连接容器"><a href="#连接容器" class="headerlink" title="连接容器"></a>连接容器</h4>运行一个容器并连接到新建的 my-net 网络</li></ul><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ docker run -it --rm --name busybox1 --network my-net busybox sh</span><br></pre></td></tr></table></figure><p>打开新的终端，再运行一个容器并加入到 my-net 网络</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ docker run -it --rm --name busybox2 --network my-net busybox sh</span><br></pre></td></tr></table></figure><p>再打开一个新的终端查看容器信息</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ docker container ls</span><br><span class="line"></span><br><span class="line">CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES</span><br><span class="line">b47060aca56b        busybox             <span class="string">"sh"</span>                11 minutes ago      Up 11 minutes                           busybox2</span><br><span class="line">8720575823ec        busybox             <span class="string">"sh"</span>                16 minutes ago      Up 16 minutes                           busybox1</span><br></pre></td></tr></table></figure><ul><li><p>下面通过 ping 来证明 busybox1 容器和 busybox2 容器建立了互联关系。</p><ul><li>在 busybox1 容器输入以下命令<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/ <span class="comment"># ping busybox2</span></span><br><span class="line">PING busybox2 (172.19.0.3): 56 data bytes</span><br><span class="line">64 bytes from 172.19.0.3: seq=0 ttl=64 time=0.072 ms</span><br><span class="line">64 bytes from 172.19.0.3: seq=1 ttl=64 time=0.118 ms</span><br></pre></td></tr></table></figure></li><li>用 ping 来测试连接 busybox2 容器，它会解析成 172.19.0.3。同理在 busybox2 容器执行 ping busybox1，也会成功连接到。<pre><code class="bash">/ <span class="comment"># ping busybox1</span>PING busybox1 (172.19.0.2): 56 data bytes64 bytes from 172.19.0.2: seq=0 ttl=64 time=0.064 ms64 bytes from 172.19.0.2: seq=1 ttl=64 time=0.143 ms</code></pre></li></ul></li><li><p>这样，busybox1 容器和 busybox2 容器建立了互联关系。</p></li></ul><p>Docker Compose<br>如果你有多个容器之间需要互相连接，推荐使用 Docker Compose。</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;h4 id=&quot;容器互联&quot;&gt;&lt;a href=&quot;#容器互联&quot; class=&quot;headerlink&quot; title=&quot;容器互联&quot;&gt;&lt;/a&gt;容器互联&lt;/h4&gt;&lt;p&gt;如果你之前有 Docker 使用经验，你可能已经习惯了使用 –link 参数来使容器互联。&lt;/p&gt;
+&lt;p&gt;随着 Docker 网络的完善，强烈建议大家将容器加入自定义的 Docker 网络来连接多个容器，而不是使用 –link 参数。&lt;/p&gt;
+&lt;h4 id=&quot;新建网络&quot;&gt;&lt;a href=&quot;#新建网络&quot; class=&quot;headerlink&quot; title=&quot;新建网络&quot;&gt;&lt;/a&gt;新建网络&lt;/h4&gt;
+    
+    </summary>
+    
+    
+    
+      <category term="docker" scheme="http://yoursite.com/tags/docker/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>mac安装多版本java</title>
+    <link href="http://yoursite.com/2018/10/03/mac%E5%AE%89%E8%A3%85%E5%A4%9A%E7%89%88%E6%9C%ACjava/"/>
+    <id>http://yoursite.com/2018/10/03/mac%E5%AE%89%E8%A3%85%E5%A4%9A%E7%89%88%E6%9C%ACjava/</id>
+    <published>2018-10-02T16:00:00.000Z</published>
+    <updated>2020-03-24T06:35:38.601Z</updated>
+    
+    <content type="html"><![CDATA[<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>在进行Java开发时，经常需要在多个JDK之前切换。比如测试应用在多个JDK之间是否能正常工作。那么问题就来了，如果更优雅地在Mac上安装多个版本的Java，并可以快速切换呢？<br>我尝试着在网上寻找答案，但发现大部分的方案都很繁琐，有些甚至是错误的。参考了网上的一些方案，整理出这篇文章。</p><h4 id="安装多版本的Java"><a href="#安装多版本的Java" class="headerlink" title="安装多版本的Java"></a>安装多版本的Java</h4><p>以在Mac上安装Java7和Java8为例:</p><ol><li>去oracle官网下载Java7和Java8。</li><li>安装Java7和Java8</li><li>编辑~/.bash_profile文件<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 设置 JDK 7</span></span><br><span class="line"><span class="built_in">export</span> JAVA_7_HOME=`/usr/libexec/java_home -v 1.7`</span><br><span class="line"><span class="comment"># 设置 JDK 8</span></span><br><span class="line"><span class="built_in">export</span> JAVA_8_HOME=`/usr/libexec/java_home -v 1.8`</span><br><span class="line"></span><br><span class="line"><span class="built_in">export</span> JAVA_HOME=<span class="variable">$JAVA_8_HOME</span></span><br></pre></td></tr></table></figure><a id="more"></a><h6 id="alias命令动态切换JDK版本"><a href="#alias命令动态切换JDK版本" class="headerlink" title="alias命令动态切换JDK版本"></a>alias命令动态切换JDK版本</h6><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">alias</span> jdk7=”<span class="built_in">export</span> JAVA_HOME=<span class="variable">$JAVA_7_HOME</span>”</span><br><span class="line"><span class="built_in">alias</span> jdk8=”<span class="built_in">export</span> JAVA_HOME=<span class="variable">$JAVA_8_HOME</span>”</span><br></pre></td></tr></table></figure><h6 id="使用jdk7命令切换到Java7"><a href="#使用jdk7命令切换到Java7" class="headerlink" title="使用jdk7命令切换到Java7:"></a>使用jdk7命令切换到Java7:</h6></li></ol><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ jdk7              <span class="comment"># 切换为Java7</span></span><br><span class="line">$ java -version     <span class="comment"># 查看Java版本</span></span><br><span class="line">java version <span class="string">"1.7.0_32"</span></span><br></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      &lt;h4 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h4&gt;&lt;p&gt;在进行Java开发时，经常需要在多个JDK之前切换。比如测试应用在多个JDK之间是否能正常工作。那么问题就来了，如果更优雅地在Mac上安装多个版本的Java，并可以快速切换呢？&lt;br&gt;我尝试着在网上寻找答案，但发现大部分的方案都很繁琐，有些甚至是错误的。参考了网上的一些方案，整理出这篇文章。&lt;/p&gt;
+&lt;h4 id=&quot;安装多版本的Java&quot;&gt;&lt;a href=&quot;#安装多版本的Java&quot; class=&quot;headerlink&quot; title=&quot;安装多版本的Java&quot;&gt;&lt;/a&gt;安装多版本的Java&lt;/h4&gt;&lt;p&gt;以在Mac上安装Java7和Java8为例:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;去oracle官网下载Java7和Java8。&lt;/li&gt;
+&lt;li&gt;安装Java7和Java8&lt;/li&gt;
+&lt;li&gt;编辑~/.bash_profile文件&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# 设置 JDK 7&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;built_in&quot;&gt;export&lt;/span&gt; JAVA_7_HOME=`/usr/libexec/java_home -v 1.7`&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;# 设置 JDK 8&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;built_in&quot;&gt;export&lt;/span&gt; JAVA_8_HOME=`/usr/libexec/java_home -v 1.8`&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;built_in&quot;&gt;export&lt;/span&gt; JAVA_HOME=&lt;span class=&quot;variable&quot;&gt;$JAVA_8_HOME&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+    
+    </summary>
+    
+    
+    
+      <category term="java" scheme="http://yoursite.com/tags/java/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Docker更换daocloud源</title>
+    <link href="http://yoursite.com/2018/03/23/docker/"/>
+    <id>http://yoursite.com/2018/03/23/docker/</id>
+    <published>2018-03-23T11:23:29.000Z</published>
+    <updated>2020-03-24T07:01:20.684Z</updated>
+    
+    <content type="html"><![CDATA[<ul><li>新建/etc/default/docker文件,并增加以下内容:<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DOCKER_OPTS=<span class="string">"--registry-mirror=http://f3bd1f11.m.daocloud.io"</span></span><br></pre></td></tr></table></figure></li><li>重启docker<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl restart docker</span><br></pre></td></tr></table></figure></li></ul>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;ul&gt;
+&lt;li&gt;新建/etc/default/docker文件,并增加以下内容:&lt;figure class=&quot;highlight dockerfile&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;
+      
+    
+    </summary>
+    
+    
+      <category term="docker" scheme="http://yoursite.com/categories/docker/"/>
+    
+    
+      <category term="docker" scheme="http://yoursite.com/tags/docker/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>ofo不适用虚拟定位下单</title>
+    <link href="http://yoursite.com/2018/03/08/ofo%E4%B8%8D%E4%BD%BF%E7%94%A8%E8%99%9A%E6%8B%9F%E5%AE%9A%E4%BD%8D%E4%B8%8B%E5%8D%95/"/>
+    <id>http://yoursite.com/2018/03/08/ofo%E4%B8%8D%E4%BD%BF%E7%94%A8%E8%99%9A%E6%8B%9F%E5%AE%9A%E4%BD%8D%E4%B8%8B%E5%8D%95/</id>
+    <published>2018-03-08T04:22:42.000Z</published>
+    <updated>2020-03-24T06:35:28.535Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><ol><li>获取ofo_token<ul><li>访问<a href="https://common.ofo.so/newdist/?Login&~next=%22%22" target="_blank" rel="noopener">ofo</a>并登陆</li><li>chrome下如果无法输入账号密码,可打开调试工具使用移动设备模拟器模拟手机</li><li>从cookie中找到ofo_token项,复制下来</li></ul></li><li>获取红包区域坐标信息<ul><li>ofo使用的是<a href="https://gaode.com/" target="_blank" rel="noopener">高德</a>地图,只需要从高德地图网页版获取坐标信息即可<a id="more"></a></li></ul></li><li>假设获取到的经纬度为:<ul><li>纬度lat=”39.896219”</li><li>经度lng=”116.445179”</li></ul></li><li>创建订单<ul><li>无需模拟定位,直接使用坐标下单<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/usr/bin/env bash</span></span><br><span class="line"><span class="comment">#ofo_token</span></span><br><span class="line">token=<span class="string">"67968641-ab30-11e6-96d22-4f0e0e662348"</span></span><br><span class="line"><span class="comment">#纬度</span></span><br><span class="line">lat=<span class="string">"39.896219"</span></span><br><span class="line"><span class="comment">#经度</span></span><br><span class="line">lng=<span class="string">"116.445179"</span></span><br><span class="line"><span class="comment">#车牌号</span></span><br><span class="line">carno=<span class="string">"457396"</span></span><br><span class="line">curl --request POST \</span><br><span class="line">      --url https://san.ofo.so/ofo/Api/v2/carno \</span><br><span class="line">      --header <span class="string">'content-type: application/x-www-form-urlencoded'</span> \</span><br><span class="line">      --data <span class="string">"accuracy=100.00000&amp;altitude=40.11111&amp;carno=<span class="variable">$carno</span>&amp;lat=<span class="variable">$lat</span>&amp;lng=<span class="variable">$lng</span>&amp;source=2&amp;source-version=12412&amp;speed=-1.000000&amp;tag=&amp;token=<span class="variable">$token</span>&amp;source-system=7.1.1&amp;source-model=xiaomi_6plus"</span></span><br></pre></td></tr></table></figure></li></ul></li><li>执行 ./bash.sh 等待10分钟,从手机app端结束骑行</li></ol>]]></content>
+    
+    <summary type="html">
+    
+      &lt;h3 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h3&gt;&lt;ol&gt;
+&lt;li&gt;获取ofo_token&lt;ul&gt;
+&lt;li&gt;访问&lt;a href=&quot;https://common.ofo.so/newdist/?Login&amp;~next=%22%22&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;ofo&lt;/a&gt;并登陆&lt;/li&gt;
+&lt;li&gt;chrome下如果无法输入账号密码,可打开调试工具使用移动设备模拟器模拟手机&lt;/li&gt;
+&lt;li&gt;从cookie中找到ofo_token项,复制下来&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;获取红包区域坐标信息&lt;ul&gt;
+&lt;li&gt;ofo使用的是&lt;a href=&quot;https://gaode.com/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;高德&lt;/a&gt;地图,只需要从高德地图网页版获取坐标信息即可
+    
+    </summary>
+    
+    
+      <category term="ofo" scheme="http://yoursite.com/categories/ofo/"/>
+    
+    
+      <category term="ofo" scheme="http://yoursite.com/tags/ofo/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>minio</title>
+    <link href="http://yoursite.com/2018/01/03/minio/"/>
+    <id>http://yoursite.com/2018/01/03/minio/</id>
+    <published>2018-01-02T16:00:00.000Z</published>
+    <updated>2020-03-24T06:35:50.492Z</updated>
+    
+    <content type="html"><![CDATA[<h6 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h6><p>可以从以下目录下载minio。minio是用Go语言编写的，编译后是一个独立的可执行文件，很方便安装和运行。</p><ul><li>mac:<a href="https://dl.min.io/client/mc/release/darwin-amd64/" target="_blank" rel="noopener">https://dl.min.io/client/mc/release/darwin-amd64/</a></li><li>linux:<a href="https://dl.min.io/server/minio/release/linux-amd64/minio" target="_blank" rel="noopener">https://dl.min.io/server/minio/release/linux-amd64/minio</a><a id="more"></a><h6 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h6><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">wget -O /opt/minio https://dl.min.io/server/minio/release/linux-amd64/minio</span><br><span class="line"></span><br><span class="line"><span class="built_in">export</span> MINIO_ACCESS_KEY=minio</span><br><span class="line"><span class="built_in">export</span> MINIO_SECRET_KEY=helloinfaith</span><br><span class="line"></span><br><span class="line"><span class="built_in">cd</span> /opt</span><br><span class="line">chmod +x minio</span><br><span class="line">./minio server /opt/data</span><br></pre></td></tr></table></figure><h6 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h6></li><li>minio只有一个可自行文件，无其他依赖。</li><li>通过设置环境变量MINIO_ACCESS_KEY, MINIO_SECRET_KEY来设置AK和SK。它会用于minio的Web界面的登录，客户端的访问</li><li>./minio server /opt/data: 启动minio server。存储目录为/opt/data。<h6 id="匿名访问"><a href="#匿名访问" class="headerlink" title="匿名访问"></a>匿名访问</h6>默认无法直接访问和下载minio中的文件。需要通过Web界面或客户端来下载。<br>如果希望通过文件url直接匿名访问，需要设置bucket的访问策略。</li></ul><p>假设minio的server地址为127.0.0.1:9000。</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 添加minio的server，取别名为local。</span></span><br><span class="line">mc config host add <span class="built_in">local</span> http://127.0.0.1:9000 minioadmin minioadmin</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置minio的public这个bucket访问策略为download。可以匿名下载。</span></span><br><span class="line">mc policy <span class="built_in">set</span> download <span class="built_in">local</span>/public</span><br><span class="line"></span><br><span class="line"><span class="comment"># 显示可以匿名访问的对象的url</span></span><br><span class="line">mc policy --recursive links <span class="built_in">local</span>/public</span><br></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      &lt;h6 id=&quot;下载&quot;&gt;&lt;a href=&quot;#下载&quot; class=&quot;headerlink&quot; title=&quot;下载&quot;&gt;&lt;/a&gt;下载&lt;/h6&gt;&lt;p&gt;可以从以下目录下载minio。minio是用Go语言编写的，编译后是一个独立的可执行文件，很方便安装和运行。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;mac:&lt;a href=&quot;https://dl.min.io/client/mc/release/darwin-amd64/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://dl.min.io/client/mc/release/darwin-amd64/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;linux:&lt;a href=&quot;https://dl.min.io/server/minio/release/linux-amd64/minio&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://dl.min.io/server/minio/release/linux-amd64/minio&lt;/a&gt;
+    
+    </summary>
+    
+    
+      <category term="minio使用" scheme="http://yoursite.com/categories/minio%E4%BD%BF%E7%94%A8/"/>
+    
+    
+      <category term="minio" scheme="http://yoursite.com/tags/minio/"/>
+    
+      <category term="ss" scheme="http://yoursite.com/tags/ss/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>docker</title>
+    <link href="http://yoursite.com/2017/08/24/%E7%A7%91%E5%AD%A6%E4%B8%8A%E7%BD%91%E6%96%B0%E5%A7%BF%E5%8A%BF/"/>
+    <id>http://yoursite.com/2017/08/24/%E7%A7%91%E5%AD%A6%E4%B8%8A%E7%BD%91%E6%96%B0%E5%A7%BF%E5%8A%BF/</id>
+    <published>2017-08-23T16:00:00.000Z</published>
+    <updated>2020-03-24T06:19:24.593Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="科学上网-docker-ss"><a href="#科学上网-docker-ss" class="headerlink" title="科学上网(docker+ss)"></a>科学上网(docker+ss)</h3><p>最近折腾的东西很杂很乱，笔记都没来得及整理。折腾内容包括但不限于： Docker, Ruby on Rails，vim 进阶用法…当然折腾的内容也比较浅显，没有系统的学习显得有点乱，基本是仅能满足需求而已。<br>这里记录下，使用 Carina by Rackspace + Docker 实现科学上网的过程。（其实用 Docker 搭建 ssserver 很早就有，只不过一直没研究，这里当作练手了)</p><h6 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h6><ol><li>链接：<a href="https://getcarina.com/" target="_blank" rel="noopener">https://getcarina.com/</a> ，注册步骤很简单，邮箱验证，手机验证即可。据说手机号可以重复验证多个帐号。</li><li>新建 Cluster<ul><li>登录界面后的界面，点击 Add Cluster…，</li><li>进入 Create Cluster 界面，Cluster Name 随便填写一个名字，我这里填写的 ss，点击Create Cluster 按钮，稍等一会，STATUS 变成 active 绿色框框后.</li><li>点击 Get access 按钮，Download file 下载压缩包到本地。</li></ul></li></ol><p>例如我是下载到 ～/Docker 文件夹里，那么</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ～/Docker</span><br><span class="line">unzip ss.zip</span><br></pre></td></tr></table></figure><p>此时会 Docker 目录下生成一个 ss 文件夹。</p><h6 id="安装-Docker"><a href="#安装-Docker" class="headerlink" title="安装 Docker"></a>安装 Docker</h6><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Arch 软件仓库有这个软件包的稳定办，可以直接安装Docker</span><br><span class="line">sudo pacman -S docker</span><br><span class="line"><span class="built_in">source</span> ～/Docker/ss/docker.env</span><br></pre></td></tr></table></figure><h6 id="创建-ss"><a href="#创建-ss" class="headerlink" title="创建 ss"></a>创建 ss</h6><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker network create my_network<span class="comment"># 创建网络，名为“my_network”</span></span><br><span class="line">docker run -d --name ss --net my_network -p 40004:40004 oddrationale/docker-shadowsocks -s 0.0.0.0 -p 40004 -k <span class="variable">$YOURPASSWORD</span> -m aes-256-cfb</span><br></pre></td></tr></table></figure><h6 id="验证启动情况"><a href="#验证启动情况" class="headerlink" title="验证启动情况"></a>验证启动情况</h6><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker port ss<span class="comment"># 查询 ss 所使用端口</span></span><br><span class="line">docker ps<span class="comment"># 检查进程</span></span><br></pre></td></tr></table></figure><p>如果一切正常，那么可以在客户端进行测试了。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h3 id=&quot;科学上网-docker-ss&quot;&gt;&lt;a href=&quot;#科学上网-docker-ss&quot; class=&quot;headerlink&quot; title=&quot;科学上网(docker+ss)&quot;&gt;&lt;/a&gt;科学上网(docker+ss)&lt;/h3&gt;&lt;p&gt;最近折腾的东西很杂很乱，笔记都没来得及整
+      
+    
+    </summary>
+    
+    
+      <category term="docker+ss" scheme="http://yoursite.com/categories/docker-ss/"/>
+    
+    
+      <category term="docker" scheme="http://yoursite.com/tags/docker/"/>
+    
+      <category term="ss" scheme="http://yoursite.com/tags/ss/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>lumen_repositories</title>
+    <link href="http://yoursite.com/2017/06/03/lumen-repositories/"/>
+    <id>http://yoursite.com/2017/06/03/lumen-repositories/</id>
+    <published>2017-06-03T15:32:42.000Z</published>
+    <updated>2020-03-23T15:45:38.189Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="lumen使用repositories"><a href="#lumen使用repositories" class="headerlink" title="lumen使用repositories"></a>lumen使用repositories</h3><ol><li>composer require “bosnadev/repositories: 0.*”<ul><li>创建repository类,继承Bosnadev\Repositories\Eloquent\Repository并实现model()方法.<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> <span class="title">Bosnadev</span>\<span class="title">Repositories</span>\<span class="title">Contracts</span>\<span class="title">RepositoryInterface</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">Bosnadev</span>\<span class="title">Repositories</span>\<span class="title">Eloquent</span>\<span class="title">Repository</span>;</span><br><span class="line">   </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">FilmsRepository</span> <span class="keyword">extends</span> <span class="title">Repository</span> </span>&#123;</span><br><span class="line">   </span><br><span class="line">   <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">model</span><span class="params">()</span> </span>&#123;</span><br><span class="line">       <span class="keyword">return</span> <span class="string">'App\Film'</span>;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><a id="more"></a></li></ul></li><li>创建model<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> <span class="title">Illuminate</span>\<span class="title">Database</span>\<span class="title">Eloquent</span>\<span class="title">Model</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Film</span> <span class="keyword">extends</span> <span class="title">Model</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> $primaryKey = <span class="string">'film_id'</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> $table = <span class="string">'film'</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> $casts = [</span><br><span class="line">        <span class="string">"rental_rate"</span>       =&gt; <span class="string">'float'</span></span><br><span class="line">    ];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li><li>在c层使用(注入)<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> <span class="title">App</span>\<span class="title">Repositories</span>\<span class="title">FilmsRepository</span> <span class="title">as</span> <span class="title">Film</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">FilmsController</span> <span class="keyword">extends</span> <span class="title">Controller</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> $film;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">(Film $film)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">$this</span>-&gt;film = $film;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">index</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> \Response::json(<span class="keyword">$this</span>-&gt;film-&gt;all());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li></ol>]]></content>
+    
+    <summary type="html">
+    
+      &lt;h3 id=&quot;lumen使用repositories&quot;&gt;&lt;a href=&quot;#lumen使用repositories&quot; class=&quot;headerlink&quot; title=&quot;lumen使用repositories&quot;&gt;&lt;/a&gt;lumen使用repositories&lt;/h3&gt;&lt;ol&gt;
+&lt;li&gt;composer require “bosnadev/repositories: 0.*”&lt;ul&gt;
+&lt;li&gt;创建repository类,继承Bosnadev\Repositories\Eloquent\Repository并实现model()方法.&lt;figure class=&quot;highlight php&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;use&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;Bosnadev&lt;/span&gt;\&lt;span class=&quot;title&quot;&gt;Repositories&lt;/span&gt;\&lt;span class=&quot;title&quot;&gt;Contracts&lt;/span&gt;\&lt;span class=&quot;title&quot;&gt;RepositoryInterface&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;use&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;Bosnadev&lt;/span&gt;\&lt;span class=&quot;title&quot;&gt;Repositories&lt;/span&gt;\&lt;span class=&quot;title&quot;&gt;Eloquent&lt;/span&gt;\&lt;span class=&quot;title&quot;&gt;Repository&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;   &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;class&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;FilmsRepository&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;Repository&lt;/span&gt; &lt;/span&gt;&amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;   &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;  	 	&lt;span class=&quot;keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;function&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;model&lt;/span&gt;&lt;span class=&quot;params&quot;&gt;()&lt;/span&gt; &lt;/span&gt;&amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;       			&lt;span class=&quot;keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;&#39;App\Film&#39;&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;   		&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+    
+    </summary>
+    
+    
+      <category term="lumen" scheme="http://yoursite.com/categories/lumen/"/>
+    
+      <category term="laravel" scheme="http://yoursite.com/categories/lumen/laravel/"/>
+    
+    
+      <category term="repositories" scheme="http://yoursite.com/tags/repositories/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>VPS</title>
+    <link href="http://yoursite.com/2017/05/01/VPS/"/>
+    <id>http://yoursite.com/2017/05/01/VPS/</id>
+    <published>2017-04-30T16:00:00.000Z</published>
+    <updated>2020-03-24T06:11:13.245Z</updated>
+    
+    <content type="html"><![CDATA[<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><ul><li>之前就一直说要将 Hexo 迁移到 vps 上，因没能找到更好的方法，这个计划就被搁置了。<br>但这段时间 GitHub 抽风更严重，只有在通过某科学上网方式时才能恢复。<br>这实在是太不方便，只得赶紧先把这个问题解决了</li></ul><blockquote><p>2017-03-09 更新: 服务器上 rsync 的启动与修改<br>2017-03-09 更新: nginx 具体配置</p></blockquote><h4 id="方案"><a href="#方案" class="headerlink" title="方案"></a>方案</h4><ol><li>VPS 上执行 hexo server，再配置 Nginx 反向代理，让域名指向 <a href="http://localhost:4000。">http://localhost:4000。</a></li><li>本地生成静态文件，再部署到 VPS 上，用 Nginx 直接做 Web 服务器。来源参考:<a href="http://blog.berry10086.com/Tech/deploy-hexo-to-vps/" target="_blank" rel="noopener">VPS上部署hexo</a></li></ol><p>毋庸置疑，为了安全起见并且在本地能同时 Deploy 到 VPS 和 Github （用作备份）上，选第二中方法肯定是比较好的。</p><a id="more"></a><h4 id="部署方式"><a href="#部署方式" class="headerlink" title="部署方式"></a>部署方式</h4><ul><li>git:这是 Google 到的大部分人会选择的方式</li><li>rsync: 这是我得选择<h4 id="开始安装"><a href="#开始安装" class="headerlink" title="开始安装"></a>开始安装</h4>整理了大概方向与思路，这次我是边实践边记录。<h4 id="nginx的安装和配置"><a href="#nginx的安装和配置" class="headerlink" title="nginx的安装和配置"></a>nginx的安装和配置</h4><h6 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h6>我的 Vps 选择的是 Digitalocean 的 5 美元每月的方案，安装的是 CentOS 7 系统，<br>安装方式与其他 Linux 方式略有不同，大家自行斟酌。</li></ul><p>SSH 连接 VPS 后，添加 CenOS 7 的 EPEL 软件包：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo yum install epel-release</span><br></pre></td></tr></table></figure><h6 id="安装-Nginx"><a href="#安装-Nginx" class="headerlink" title="安装 Nginx"></a>安装 Nginx</h6><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo yum install nginx -y</span><br></pre></td></tr></table></figure><h6 id="启动nginx"><a href="#启动nginx" class="headerlink" title="启动nginx"></a>启动nginx</h6><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo systemctl start nginx.service</span><br></pre></td></tr></table></figure><h6 id="如果开启了防火墙，需要添加规则允许-HTTP-以及-HTTPS："><a href="#如果开启了防火墙，需要添加规则允许-HTTP-以及-HTTPS：" class="headerlink" title="如果开启了防火墙，需要添加规则允许 HTTP 以及 HTTPS："></a>如果开启了防火墙，需要添加规则允许 HTTP 以及 HTTPS：</h6><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo firewall-cmd --permanent --zone=public --add-service=http</span><br><span class="line">sudo firewall-cmd --permanent --zone=public --add-service=https</span><br><span class="line">sudo firewall-cmd --reload</span><br></pre></td></tr></table></figure><h6 id="设置-Nginx-自动跟随系统启动"><a href="#设置-Nginx-自动跟随系统启动" class="headerlink" title="设置 Nginx 自动跟随系统启动"></a>设置 Nginx 自动跟随系统启动</h6><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo systemctl <span class="built_in">enable</span> nginx</span><br></pre></td></tr></table></figure><p>现在可以在浏览器中输入 vps 的 ip 检查看 Nginx!是否启动了。<br>如果出现 “Welcome to Nginx..” 的字样，恭喜！代表你的 Nginx 成功安装并启动。</p><h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><p>创建配置文件存放目录</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo mkdir /etc/nginx/sites-available</span><br><span class="line">sudo mkdir /etc/nginx/sites-enabled</span><br></pre></td></tr></table></figure><p>编辑默认配置文件</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vi /etc/nginx/nginx.conf</span><br></pre></td></tr></table></figure><p>将以下内容添加到 http{} 里,</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">include /etc/nginx/sites-enabled/*.conf;</span><br><span class="line">server_names_hash_bucket_size 64;</span><br></pre></td></tr></table></figure><p>保存退出.为新的网站创建配置,以xxx 为例:</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vi /etc/nginx/sites-available/xxx.me.conf     <span class="comment">#  名字可自定义,以 .conf 结尾</span></span><br></pre></td></tr></table></figure><p>创建软链接:</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo ln -s /etc/nginx/sites-available/xxx.me.conf /etc/nginx/sites-enabled/xxx.me.conf</span><br></pre></td></tr></table></figure><p>重启 Nginx:</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo systemctl restart nginx          <span class="comment">## service nginx restart</span></span><br></pre></td></tr></table></figure><h4 id="rsync-部署"><a href="#rsync-部署" class="headerlink" title="rsync 部署"></a>rsync 部署</h4><h6 id="安装rsync"><a href="#安装rsync" class="headerlink" title="安装rsync"></a>安装rsync</h6><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo yum -y install rsync</span><br></pre></td></tr></table></figure><p>启动</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo systemctl start rsyncd</span><br><span class="line">sudo systemctl <span class="built_in">enable</span> rsyncd</span><br></pre></td></tr></table></figure><p>防火墙添加权限:</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo firewall-cmd --permanent --add-port=873/tcp</span><br><span class="line">sudo firewall-cmd --permanent --add-port=873/udp</span><br></pre></td></tr></table></figure><p>本地安装 rsync (Ubuntu 系统为例)</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install rsync</span><br></pre></td></tr></table></figure><p>hexo 目录下安装 rsync</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-deployer-rsync --save</span><br></pre></td></tr></table></figure><p>启动</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo -g d</span><br></pre></td></tr></table></figure><p>看到如下信息标识启动成功</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sent 353,570 bytes  received 2,012 bytes  30,920.17 bytes/sec</span><br><span class="line">total size is 870,006  speedup is 2.45</span><br><span class="line">INFO  Deploy <span class="keyword">done</span>: rsync</span><br></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      &lt;h4 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;之前就一直说要将 Hexo 迁移到 vps 上，因没能找到更好的方法，这个计划就被搁置了。&lt;br&gt;但这段时间 GitHub 抽风更严重，只有在通过某科学上网方式时才能恢复。&lt;br&gt;这实在是太不方便，只得赶紧先把这个问题解决了&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;2017-03-09 更新: 服务器上 rsync 的启动与修改&lt;br&gt;2017-03-09 更新: nginx 具体配置&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&quot;方案&quot;&gt;&lt;a href=&quot;#方案&quot; class=&quot;headerlink&quot; title=&quot;方案&quot;&gt;&lt;/a&gt;方案&lt;/h4&gt;&lt;ol&gt;
+&lt;li&gt;VPS 上执行 hexo server，再配置 Nginx 反向代理，让域名指向 &lt;a href=&quot;http://localhost:4000。&quot;&gt;http://localhost:4000。&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;本地生成静态文件，再部署到 VPS 上，用 Nginx 直接做 Web 服务器。来源参考:&lt;a href=&quot;http://blog.berry10086.com/Tech/deploy-hexo-to-vps/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;VPS上部署hexo&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;毋庸置疑，为了安全起见并且在本地能同时 Deploy 到 VPS 和 Github （用作备份）上，选第二中方法肯定是比较好的。&lt;/p&gt;
+    
+    </summary>
+    
+    
+    
+      <category term="hexo" scheme="http://yoursite.com/tags/hexo/"/>
+    
+      <category term="vps" scheme="http://yoursite.com/tags/vps/"/>
+    
+  </entry>
+  
+</feed>
