@@ -186,6 +186,89 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="cn">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/08/24/%E7%A7%91%E5%AD%A6%E4%B8%8A%E7%BD%91%E6%96%B0%E5%A7%BF%E5%8A%BF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/logo.png">
+      <meta itemprop="name" content="Wang liangliang">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wangll">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/08/24/%E7%A7%91%E5%AD%A6%E4%B8%8A%E7%BD%91%E6%96%B0%E5%A7%BF%E5%8A%BF/" class="post-title-link" itemprop="url">docker</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-08-24 00:00" itemprop="dateCreated datePublished" datetime="2017-08-24T00:00:00+08:00">2017-08-24</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/docker-ss/" itemprop="url" rel="index"><span itemprop="name">docker+ss</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="科学上网-docker-ss"><a href="#科学上网-docker-ss" class="headerlink" title="科学上网(docker+ss)"></a>科学上网(docker+ss)</h3><p>最近折腾的东西很杂很乱，笔记都没来得及整理。折腾内容包括但不限于： Docker, Ruby on Rails，vim 进阶用法…当然折腾的内容也比较浅显，没有系统的学习显得有点乱，基本是仅能满足需求而已。<br>这里记录下，使用 Carina by Rackspace + Docker 实现科学上网的过程。（其实用 Docker 搭建 ssserver 很早就有，只不过一直没研究，这里当作练手了)</p>
+<h6 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h6><ol>
+<li>链接：<a href="https://getcarina.com/" target="_blank" rel="noopener">https://getcarina.com/</a> ，注册步骤很简单，邮箱验证，手机验证即可。据说手机号可以重复验证多个帐号。</li>
+<li>新建 Cluster<ul>
+<li>登录界面后的界面，点击 Add Cluster…，</li>
+<li>进入 Create Cluster 界面，Cluster Name 随便填写一个名字，我这里填写的 ss，点击Create Cluster 按钮，稍等一会，STATUS 变成 active 绿色框框后.</li>
+<li>点击 Get access 按钮，Download file 下载压缩包到本地。</li>
+</ul>
+</li>
+</ol>
+<p>例如我是下载到 ～/Docker 文件夹里，那么</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ～/Docker</span><br><span class="line">unzip ss.zip</span><br></pre></td></tr></table></figure>
+<p>此时会 Docker 目录下生成一个 ss 文件夹。</p>
+<h6 id="安装-Docker"><a href="#安装-Docker" class="headerlink" title="安装 Docker"></a>安装 Docker</h6><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Arch 软件仓库有这个软件包的稳定办，可以直接安装Docker</span><br><span class="line">sudo pacman -S docker</span><br><span class="line"><span class="built_in">source</span> ～/Docker/ss/docker.env</span><br></pre></td></tr></table></figure>
+<h6 id="创建-ss"><a href="#创建-ss" class="headerlink" title="创建 ss"></a>创建 ss</h6><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker network create my_network	<span class="comment"># 创建网络，名为“my_network”</span></span><br><span class="line">docker run -d --name ss --net my_network -p 40004:40004 oddrationale/docker-shadowsocks -s 0.0.0.0 -p 40004 -k <span class="variable">$YOURPASSWORD</span> -m aes-256-cfb</span><br></pre></td></tr></table></figure>
+<h6 id="验证启动情况"><a href="#验证启动情况" class="headerlink" title="验证启动情况"></a>验证启动情况</h6><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker port ss	<span class="comment"># 查询 ss 所使用端口</span></span><br><span class="line">docker ps	<span class="comment"># 检查进程</span></span><br></pre></td></tr></table></figure>
+<p>如果一切正常，那么可以在客户端进行测试了。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="cn">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/06/03/lumen-repositories/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -408,7 +491,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
           <a href="/archives">
-          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-count">13</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
