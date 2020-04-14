@@ -331,8 +331,8 @@ PING busybox1 (172.19.0.2): 56 data bytes
         <category>docker+ss</category>
       </categories>
       <tags>
-        <tag>docker</tag>
         <tag>ss</tag>
+        <tag>docker</tag>
       </tags>
   </entry>
   <entry>

@@ -316,9 +316,9 @@
       <category term="docker+ss" scheme="http://yoursite.com/categories/docker-ss/"/>
     
     
-      <category term="docker" scheme="http://yoursite.com/tags/docker/"/>
-    
       <category term="ss" scheme="http://yoursite.com/tags/ss/"/>
+    
+      <category term="docker" scheme="http://yoursite.com/tags/docker/"/>
     
   </entry>
   
