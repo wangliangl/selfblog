@@ -2,7 +2,7 @@
 <search>
   <entry>
     <title>记录一次生产环境docker tcp6导致接口访问不到情况</title>
-    <url>/2020/04/13/TCP6%E9%97%AE%E9%A2%98/</url>
+    <url>/2020/04/13/tcp6%E9%97%AE%E9%A2%98/</url>
     <content><![CDATA[<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>今天部署docker时发现一个比较奇怪的现象，netstat 查看监听的服务端口时，却只显示了 tcp6 的监控， 但是服务明明是可以通过 tcp4 的 ipv4 地址访问的，那为什么没有显示 tcp4 的监听呢</p>
 <p>已 sshd 监听的 22 端口为例：</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> netstat -tlnp | grep :22</span></span><br><span class="line">tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      1444/sshd</span><br><span class="line">tcp6       0      0 :::22                   :::*                    LISTEN      1444/sshd</span><br></pre></td></tr></table></figure>
